@@ -18,6 +18,12 @@ Next.js-App für ein gemeinsames Home-Dashboard. Zeitzone und Locale sind
 4. In Supabase Auth GitHub als Provider sowie
    `http://localhost:3000/auth/callback` als erlaubte Redirect-URL konfigurieren.
 
+Optional kann `OPENROUTER_API_KEY` lokal und in Vercel gesetzt werden. Dann
+erstellt `openai/gpt-4o-mini` höchstens einmal pro Stunde drei kurze
+Kleidungstipps aus den aktuellen Wetter- und Prognosedaten. Der Schlüssel
+bleibt ausschliesslich auf dem Server; ohne Schlüssel funktioniert die
+Wetteranzeige weiterhin ohne Kleidungstipps.
+
 ## Entwicklung
 
 ```bash

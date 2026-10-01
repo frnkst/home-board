@@ -100,6 +100,12 @@ function parseWeather(payload: unknown): WeatherData | null {
         : null;
     })
     .filter((item): item is WeatherPoint => item !== null);
+  const rawAdvice = object(root.clothingAdvice);
+  const adviceItems = Array.isArray(rawAdvice?.items)
+    ? rawAdvice.items.filter(
+        (item): item is string => typeof item === "string",
+      )
+    : [];
   return {
     temperature,
     apparentTemperatureCelsius: number(
@@ -118,6 +124,10 @@ function parseWeather(payload: unknown): WeatherData | null {
         ? String(root.fetchedAt ?? root.updatedAt)
         : new Date().toISOString(),
     forecast,
+    clothingAdvice:
+      adviceItems.length === 3 && typeof rawAdvice?.generatedAt === "string"
+        ? { items: adviceItems, generatedAt: rawAdvice.generatedAt }
+        : null,
   };
 }
 
@@ -298,37 +308,52 @@ function EmptyState({
 
 function WeatherNow({ weather }: { weather: WeatherData }) {
   return (
-    <>
-      <div className="weather-reading">
-        <WeatherIcon code={weather.weatherCode} />
-        <strong>{Math.round(weather.temperature)}°</strong>
+    <div className="weather-now">
+      <div className="weather-now__conditions">
+        <div className="weather-reading">
+          <WeatherIcon code={weather.weatherCode} />
+          <strong>{Math.round(weather.temperature)}°</strong>
+        </div>
+        <p className="weather-caption">
+          {weatherLabel(weather.weatherCode)}
+          {weather.apparentTemperatureCelsius !== null &&
+            ` · gefühlt ${Math.round(weather.apparentTemperatureCelsius)}°`}
+        </p>
+        <div className="weather-details">
+          <span>
+            <i className="weather-details__drop" aria-hidden />
+            <small>Regen</small>
+            <strong>{weather.precipitationMm?.toFixed(1) ?? "–"} mm</strong>
+          </span>
+          <span>
+            <i
+              className="weather-details__wind"
+              style={{
+                transform: `rotate(${weather.windDirectionDegrees ?? 0}deg)`,
+              }}
+              aria-hidden
+            >
+              ↑
+            </i>
+            <small>Wind</small>
+            <strong>{Math.round(weather.windSpeedKmh ?? 0)} km/h</strong>
+          </span>
+        </div>
       </div>
-      <p className="weather-caption">
-        {weatherLabel(weather.weatherCode)}
-        {weather.apparentTemperatureCelsius !== null &&
-          ` · gefühlt ${Math.round(weather.apparentTemperatureCelsius)}°`}
-      </p>
-      <div className="weather-details">
-        <span>
-          <i className="weather-details__drop" aria-hidden />
-          <small>Regen</small>
-          <strong>{weather.precipitationMm?.toFixed(1) ?? "–"} mm</strong>
-        </span>
-        <span>
-          <i
-            className="weather-details__wind"
-            style={{
-              transform: `rotate(${weather.windDirectionDegrees ?? 0}deg)`,
-            }}
-            aria-hidden
-          >
-            ↑
-          </i>
-          <small>Wind</small>
-          <strong>{Math.round(weather.windSpeedKmh ?? 0)} km/h</strong>
-        </span>
-      </div>
-    </>
+      {weather.clothingAdvice ? (
+        <aside className="clothing-advice">
+          <p><span aria-hidden>✦</span> Heute anziehen</p>
+          <ol>
+            {weather.clothingAdvice.items.map((item, index) => (
+              <li key={item}>
+                <b>{String(index + 1).padStart(2, "0")}</b>
+                <span>{item}</span>
+              </li>
+            ))}
+          </ol>
+        </aside>
+      ) : null}
+    </div>
   );
 }
 

@@ -9,6 +9,7 @@ import {
   getCurrentWeather,
   getWeatherForecast,
 } from "@/lib/providers/open-meteo";
+import { getClothingAdvice } from "@/lib/providers/openrouter";
 import { createClient } from "@/lib/supabase/server";
 
 export async function GET(request: NextRequest) {
@@ -19,7 +20,7 @@ export async function GET(request: NextRequest) {
     const supabase = await createClient();
     const { data: settings, error } = await supabase
       .from("app_settings")
-      .select("weather_latitude,weather_longitude,weather_forecast_days")
+      .select("weather_place_name,weather_latitude,weather_longitude,weather_forecast_days")
       .eq("id", true)
       .single();
     if (error) throw error;
@@ -35,12 +36,26 @@ export async function GET(request: NextRequest) {
         days: numberParam(query.get("days")) ?? settings.weather_forecast_days,
       }),
     ]);
+    let clothingAdvice = null;
+    try {
+      clothingAdvice = await getClothingAdvice(
+        { current, forecast: forecast.days },
+        {
+          latitude: location.latitude,
+          longitude: location.longitude,
+          name: settings.weather_place_name,
+        },
+      );
+    } catch (adviceError) {
+      console.error("OpenRouter clothing advice failed", adviceError);
+    }
     return NextResponse.json({
       current: {
         ...current,
         apparentTemperatureCelsius: current.apparentTemperatureCelsius,
       },
       forecast: forecast.days,
+      clothingAdvice,
       fetchedAt:
         current.fetchedAt > forecast.fetchedAt
           ? current.fetchedAt

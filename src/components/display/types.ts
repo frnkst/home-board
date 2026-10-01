@@ -47,6 +47,10 @@ export type WeatherData = {
   weatherCode: number | null;
   updatedAt: string;
   forecast: WeatherPoint[];
+  clothingAdvice: {
+    items: string[];
+    generatedAt: string;
+  } | null;
 };
 
 export type Departure = {
