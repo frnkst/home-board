@@ -8,7 +8,7 @@ export default async function TickerPage() {
   const { data } = await supabase.from("market_symbols").select("*").order("sort_order").order("id");
   const items = data ?? [];
   return <>
-    <PageHeader eyebrow="Märkte" title="Ticker-Symbole" description="Börsenkurse und Währungen in der gewünschten Reihenfolge." />
+    <PageHeader eyebrow="Märkte" title="Ticker-Symbole" description="Ticker oder ISIN eingeben. Schweizer Kürzel können mit .CH erfasst werden." />
     <section className="admin-card admin-create"><h2>Symbol hinzufügen</h2><SymbolForm order={items.length} /></section>
     <section className="admin-list">
       {items.length ? items.map((item, index) => <details className="admin-item" key={item.id}>
@@ -27,7 +27,7 @@ function SymbolForm({ item, order }: { item?: { id: string; symbol: string; labe
   return <ActionForm action={saveMarketSymbol}>
     {item ? <input type="hidden" name="id" value={item.id} /> : null}<input type="hidden" name="sort_order" value={order} />
     <Fields>
-      <label><span>Symbol</span><input name="symbol" required maxLength={24} autoCapitalize="characters" placeholder="AAPL" defaultValue={item?.symbol} /></label>
+      <label><span>Ticker oder ISIN</span><input name="symbol" required maxLength={24} autoCapitalize="characters" placeholder="NESN.CH oder CH0038863350" defaultValue={item?.symbol} /></label>
       <label><span>Bezeichnung</span><input name="label" required maxLength={80} placeholder="Apple" defaultValue={item?.label} /></label>
       <label><span>Währung</span><input name="currency" required minLength={3} maxLength={3} autoCapitalize="characters" defaultValue={item?.currency ?? "CHF"} /></label>
     </Fields><Toggle defaultChecked={item?.enabled ?? true} />

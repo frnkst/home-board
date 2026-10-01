@@ -4,7 +4,7 @@ import {
   authorizeAdminApi,
   providerErrorResponse,
 } from "@/app/api/_lib/response";
-import { marketDataProvider } from "@/lib/providers/markets/stooq";
+import { marketDataProvider } from "@/lib/providers/markets/yahoo";
 
 export async function GET(request: NextRequest) {
   const authError = await authorizeAdminApi();

@@ -4,7 +4,7 @@ import {
   authorizeAdminApi,
   providerErrorResponse,
 } from "@/app/api/_lib/response";
-import { marketDataProvider } from "@/lib/providers/markets/stooq";
+import { marketDataProvider } from "@/lib/providers/markets/yahoo";
 
 export async function GET(request: NextRequest) {
   const authError = await authorizeAdminApi();
@@ -31,12 +31,15 @@ export async function GET(request: NextRequest) {
       quotes: quotes.map((quote, index) => {
         const points = histories[index]?.points.slice(-30) ?? [];
         const first = points[0]?.close;
+        const previousClose = quote.previousClose;
         return {
           ...quote,
           updatedAt: quote.observedAt,
           changePercent:
-            first && points.length
-              ? ((points.at(-1)!.close - first) / first) * 100
+            previousClose && previousClose > 0
+              ? ((quote.price - previousClose) / previousClose) * 100
+              : first && points.length
+                ? ((points.at(-1)!.close - first) / first) * 100
               : null,
           history: points.map((point) => ({
             at: `${point.date}T12:00:00Z`,

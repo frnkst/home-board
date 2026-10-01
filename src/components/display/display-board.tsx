@@ -2,6 +2,10 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
+import {
+  MarketPriceChart,
+  WeatherForecastChart,
+} from "@/components/display/DisplayCharts";
 import type {
   Departure,
   DisplayData,
@@ -33,10 +37,6 @@ const dayFormatter = new Intl.DateTimeFormat("de-CH", {
   weekday: "long",
   day: "2-digit",
   month: "long",
-});
-const shortDayFormatter = new Intl.DateTimeFormat("de-CH", {
-  timeZone: ZONE,
-  weekday: "short",
 });
 const timeFormatter = new Intl.DateTimeFormat("de-CH", {
   timeZone: ZONE,
@@ -324,26 +324,6 @@ function WeatherNow({ weather }: { weather: WeatherData }) {
         </span>
       </div>
     </>
-  );
-}
-
-function Sparkline({ quote }: { quote: MarketQuote }) {
-  if (quote.history.length < 2)
-    return <div className="sparkline sparkline--empty">Keine Kursreihe</div>;
-  const values = quote.history.map((point) => point.value);
-  const min = Math.min(...values);
-  const max = Math.max(...values);
-  const span = max - min || 1;
-  const points = values
-    .map(
-      (value, index) =>
-        `${(index / (values.length - 1)) * 100},${95 - ((value - min) / span) * 90}`,
-    )
-    .join(" ");
-  return (
-    <svg className="sparkline" viewBox="0 0 100 100" preserveAspectRatio="none">
-      <polyline points={points} vectorEffect="non-scaling-stroke" />
-    </svg>
   );
 }
 
@@ -780,7 +760,7 @@ export function DisplayBoard({ initialData }: { initialData: DisplayData }) {
                         <p>{symbol.label}</p>
                         <span>{symbol.symbol}</span>
                       </header>
-                      <Sparkline quote={quote} />
+                      <MarketPriceChart quote={quote} />
                       <footer>
                         <strong>
                           {quote.price.toLocaleString("de-CH", {
@@ -963,10 +943,18 @@ function SectionHeading({ index, title }: { index: string; title: string }) {
 }
 
 function Forecast({ weather }: { weather: WeatherData | null }) {
+  const future = useMemo(
+    () =>
+      weather?.forecast
+        .filter(
+          (point) =>
+            point.date >=
+            new Date().toLocaleDateString("sv-SE", { timeZone: ZONE }),
+        )
+        .slice(0, 6) ?? [],
+    [weather],
+  );
   if (!weather) return <div className="forecast-placeholder" />;
-  const future = weather.forecast
-    .filter((point) => point.date >= new Date().toLocaleDateString("sv-SE", { timeZone: ZONE }))
-    .slice(0, 6);
   if (!future.length)
     return (
       <EmptyState
@@ -975,24 +963,16 @@ function Forecast({ weather }: { weather: WeatherData | null }) {
       />
     );
   return (
-    <div className="forecast">
-      {future.map((point) => (
-        <div key={point.date}>
-          <time>
-            {shortDayFormatter.format(new Date(`${point.date}T12:00:00Z`))}
-          </time>
-          <WeatherIcon code={point.weatherCode} compact />
-          <strong>
-            {Math.round(point.temperatureMaxCelsius)}° /{" "}
-            {Math.round(point.temperatureMinCelsius)}°
-          </strong>
-          <small>
-            {point.precipitationProbabilityPercent === null
-              ? "—"
-              : `${Math.round(point.precipitationProbabilityPercent)} %`}
-          </small>
-        </div>
-      ))}
+    <div className="forecast-visual">
+      <div className="forecast-icons">
+        {future.map((point) => (
+          <span key={point.date}>
+            <WeatherIcon code={point.weatherCode} compact />
+            <small>{weatherLabel(point.weatherCode)}</small>
+          </span>
+        ))}
+      </div>
+      <WeatherForecastChart points={future} />
     </div>
   );
 }

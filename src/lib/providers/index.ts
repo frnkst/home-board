@@ -7,7 +7,7 @@ export {
   searchPlaces,
 } from "@/lib/providers/open-meteo";
 export { getDepartures, searchStops } from "@/lib/providers/transport";
-export { marketDataProvider } from "@/lib/providers/markets/stooq";
+export { marketDataProvider } from "@/lib/providers/markets/yahoo";
 export type {
   MarketDataProvider,
   MarketHistory,
