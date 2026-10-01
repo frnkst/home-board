@@ -9,6 +9,7 @@ import {
 } from "@/components/display/DisplayCharts";
 import type {
   Departure,
+  DailyFact,
   DisplayData,
   MarketQuote,
   WeatherData,
@@ -208,6 +209,24 @@ function parseQuotes(payload: unknown): MarketQuote[] {
   });
 }
 
+function parseDailyFact(payload: unknown): DailyFact | null {
+  const fact = object(payload);
+  return fact &&
+    typeof fact.id === "string" &&
+    typeof fact.text === "string" &&
+    typeof fact.source === "string" &&
+    typeof fact.sourceUrl === "string" &&
+    typeof fact.fetchedAt === "string"
+    ? {
+        id: fact.id,
+        text: fact.text,
+        source: fact.source,
+        sourceUrl: fact.sourceUrl,
+        fetchedAt: fact.fetchedAt,
+      }
+    : null;
+}
+
 function weatherLabel(code: number | null) {
   if (code === null) return "Wetter";
   if (code === 0) return "Klar";
@@ -363,6 +382,7 @@ export function DisplayBoard({ initialData }: { initialData: DisplayData }) {
   const [weather, setWeather] = useState<WeatherData | null>(null);
   const [departures, setDepartures] = useState<Departure[] | null>(null);
   const [quotes, setQuotes] = useState<MarketQuote[] | null>(null);
+  const [dailyFact, setDailyFact] = useState<DailyFact | null>(null);
   const [feedErrors, setFeedErrors] = useState<string[]>([]);
   const [manualIndex, setManualIndex] = useState<number | null>(null);
   const [manualStartedAt, setManualStartedAt] = useState<number | null>(null);
@@ -405,6 +425,14 @@ export function DisplayBoard({ initialData }: { initialData: DisplayData }) {
             if (!response.ok) throw new Error("Abfahrten");
             const parsed = parseDepartures(await response.json());
             if (!cancelled) setDepartures(parsed);
+          },
+        ),
+        fetch("/api/daily-fact", { cache: "no-store" }).then(
+          async (response) => {
+            if (!response.ok) throw new Error("Fakt des Tages");
+            const parsed = parseDailyFact(await response.json());
+            if (!parsed) throw new Error("Fakt des Tages");
+            if (!cancelled) setDailyFact(parsed);
           },
         ),
       ];
@@ -617,11 +645,15 @@ export function DisplayBoard({ initialData }: { initialData: DisplayData }) {
         </section>
         <section className="overview-events">
           <SectionHeading index="02" title="Als Nächstes" />
-          <EventList events={upcomingEvents.slice(0, 4)} />
+          <EventList events={upcomingEvents.slice(0, 3)} />
         </section>
         <section className="overview-departures">
           <SectionHeading index="03" title="Abfahrten" />
-          <DepartureList departures={departures} error={feedErrors.includes("Abfahrten")} />
+          <DepartureList
+            departures={departures}
+            error={feedErrors.includes("Abfahrten")}
+            limit={3}
+          />
         </section>
       </main>
     );
@@ -772,6 +804,28 @@ export function DisplayBoard({ initialData }: { initialData: DisplayData }) {
           </main>
         );
       }
+      case "daily_fact":
+        return (
+          <main className="daily-fact">
+            <div className="daily-fact__orb" aria-hidden />
+            <p className="eyebrow">Schon gewusst?</p>
+            {dailyFact ? (
+              <>
+                <blockquote>{dailyFact.text}</blockquote>
+                <footer>
+                  <span>Fakt des Tages</span>
+                  <cite>{dailyFact.source}</cite>
+                </footer>
+              </>
+            ) : feedErrors.includes("Fakt des Tages") ? (
+              <EmptyState
+                label="Der Fakt des Tages ist gerade nicht verfügbar"
+              />
+            ) : (
+              <LoadingState label="Fakt des Tages" />
+            )}
+          </main>
+        );
       case "markets": {
         const symbols = data.marketSymbols.filter(
           (item) => !entry.referenceId || item.id === entry.referenceId,
@@ -892,7 +946,6 @@ export function DisplayBoard({ initialData }: { initialData: DisplayData }) {
           <main className="text-view">
             {text ? (
               <>
-                <p className="eyebrow">Notiz an alle</p>
                 {text.title && <h1>{text.title}</h1>}
                 <div className="text-view__body">{text.body}</div>
               </>
@@ -919,10 +972,7 @@ export function DisplayBoard({ initialData }: { initialData: DisplayData }) {
       }}
     >
       <header className="display-header">
-        <div className="date-lockup">
-          <span>Heute</span>
-          <strong>{dayFormatter.format(now)}</strong>
-        </div>
+        <time className="date-lockup">{dayFormatter.format(now)}</time>
         <time className="clock">{timeFormatter.format(now)}</time>
       </header>
 
@@ -1014,6 +1064,7 @@ function Forecast({ weather }: { weather: WeatherData | null }) {
             <WeatherIcon code={point.weatherCode} compact />
             <div>
               <strong>{Math.round(point.temperatureMaxCelsius)}°</strong>
+              <i aria-hidden>/</i>
               <span>{Math.round(point.temperatureMinCelsius)}°</span>
             </div>
             <small>
@@ -1072,9 +1123,11 @@ function EventList({
 function DepartureList({
   departures,
   error,
+  limit = 5,
 }: {
   departures: Departure[] | null;
   error: boolean;
+  limit?: number;
 }) {
   if (departures === null)
     return error ? (
@@ -1094,7 +1147,7 @@ function DepartureList({
     );
   return (
     <div className="departure-list">
-      {departures.slice(0, 5).map((departure) => {
+      {departures.slice(0, limit).map((departure) => {
         const isBus =
           departure.category?.toLowerCase() === "bus" ||
           departure.category?.toLowerCase() === "b" ||

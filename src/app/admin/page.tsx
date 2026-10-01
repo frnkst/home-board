@@ -18,6 +18,7 @@ const kindLabels: Record<PlaylistKind, string> = {
   events: "Termine",
   countdowns: "Countdowns",
   live_countdown: "Live Countdown",
+  daily_fact: "Fakt des Tages",
   markets: "Ticker",
   photos: "Fotos",
   webpage: "Webseite",

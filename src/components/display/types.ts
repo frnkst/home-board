@@ -63,6 +63,14 @@ export type Departure = {
   platform: string | null;
 };
 
+export type DailyFact = {
+  id: string;
+  text: string;
+  source: string;
+  sourceUrl: string;
+  fetchedAt: string;
+};
+
 export type MarketQuote = {
   symbol: string;
   price: number;

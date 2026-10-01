@@ -6,7 +6,7 @@ import { createClient } from "@/lib/supabase/server";
 const kinds = [
   ["overview", "Übersicht"], ["weather", "Wetter"], ["departures", "Abfahrten"],
   ["events", "Termine"], ["countdowns", "Countdowns"], ["live_countdown", "Live Countdown"], ["markets", "Ticker"],
-  ["photos", "Fotos"], ["webpage", "Webseite"], ["custom_text", "Eigener Text"],
+  ["daily_fact", "Fakt des Tages"], ["photos", "Fotos"], ["webpage", "Webseite"], ["custom_text", "Eigener Text"],
 ] as const;
 
 export default async function PlaylistPage() {
@@ -41,7 +41,7 @@ export default async function PlaylistPage() {
 
 type Reference = { id: string; title: string | null; kind: string };
 function PlaylistForm({ entry, order, references }: {
-  entry?: { id: string; kind: "overview" | "weather" | "departures" | "events" | "countdowns" | "live_countdown" | "markets" | "photos" | "webpage" | "custom_text"; reference_id: string | null; duration_seconds: number; enabled: boolean };
+  entry?: { id: string; kind: "overview" | "weather" | "departures" | "events" | "countdowns" | "live_countdown" | "daily_fact" | "markets" | "photos" | "webpage" | "custom_text"; reference_id: string | null; duration_seconds: number; enabled: boolean };
   order: number; references: Reference[];
 }) {
   return <ActionForm action={savePlaylistEntry}>

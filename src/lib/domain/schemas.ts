@@ -115,6 +115,7 @@ export const playlistKindSchema = z.enum([
   "events",
   "countdowns",
   "live_countdown",
+  "daily_fact",
   "markets",
   "photos",
   "webpage",

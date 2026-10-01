@@ -456,6 +456,7 @@ const playlistInput = z.object({
     "events",
     "countdowns",
     "live_countdown",
+    "daily_fact",
     "markets",
     "photos",
     "webpage",
