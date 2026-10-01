@@ -851,7 +851,12 @@ export function DisplayBoard({ initialData }: { initialData: DisplayData }) {
                     <article className="market" key={symbol.id}>
                       <header>
                         <p>{symbol.label}</p>
-                        <span>{symbol.symbol}</span>
+                        <div className="market__meta">
+                          <span>{symbol.symbol}</span>
+                          <time>
+                            {dateTimeFormatter.format(new Date(quote.updatedAt))}
+                          </time>
+                        </div>
                       </header>
                       <MarketPriceChart quote={quote} />
                       <footer>

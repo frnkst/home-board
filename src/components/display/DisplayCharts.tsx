@@ -211,11 +211,12 @@ export function MarketPriceChart({ quote }: { quote: MarketQuote }) {
   const positive = (quote.changePercent ?? 0) >= 0;
   const color = positive ? "#4f8060" : "#bd604f";
   const fill = positive ? "rgba(103, 143, 108, " : "rgba(194, 102, 82, ";
+  const labelInterval = Math.max(1, Math.ceil(quote.history.length / 5));
   const option = useMemo<EChartsOption>(
     () => ({
       animationDuration: 1100,
       animationEasing: "cubicOut",
-      grid: { top: 16, right: 5, bottom: 18, left: 5 },
+      grid: { top: 16, right: 10, bottom: 34, left: 54 },
       tooltip: {
         trigger: "axis",
         backgroundColor: "rgba(255, 250, 241, 0.96)",
@@ -234,16 +235,35 @@ export function MarketPriceChart({ quote }: { quote: MarketQuote }) {
         type: "category",
         boundaryGap: false,
         data: quote.history.map((point) => point.at),
-        axisLine: { show: false },
+        axisLine: { lineStyle: { color: "rgba(83, 65, 52, 0.18)" } },
         axisTick: { show: false },
-        axisLabel: { show: false },
+        axisLabel: {
+          show: true,
+          color: "#806f62",
+          fontSize: 10,
+          fontWeight: 650,
+          margin: 11,
+          formatter: (value: string, index: number) =>
+            index === 0 ||
+            index === quote.history.length - 1 ||
+            index % labelInterval === 0
+              ? dateFormatter.format(new Date(value))
+              : "",
+        },
       },
       yAxis: {
         type: "value",
         scale: true,
         axisLine: { show: false },
         axisTick: { show: false },
-        axisLabel: { show: false },
+        axisLabel: {
+          show: true,
+          color: "#806f62",
+          fontSize: 10,
+          fontWeight: 650,
+          formatter: (value: number) =>
+            value.toLocaleString("de-CH", { maximumFractionDigits: 2 }),
+        },
         splitLine: {
           lineStyle: { color: "rgba(126, 92, 62, 0.09)", type: "dashed" },
         },
@@ -270,7 +290,7 @@ export function MarketPriceChart({ quote }: { quote: MarketQuote }) {
         },
       }],
     }),
-    [color, fill, quote.currency, quote.history],
+    [color, fill, labelInterval, quote.currency, quote.history],
   );
 
   if (quote.history.length < 2) {
