@@ -36,38 +36,36 @@ werden unter `/admin/settings` gesucht, ausgewählt und gespeichert.
 
 ## Raspberry Pi Kiosk
 
-Auf Raspberry Pi OS zuerst Chromium und die HDMI-Steuerung installieren und
-die lokale Zeitzone setzen:
+Auf Raspberry Pi OS zuerst die lokale Zeitzone setzen und danach den
+persistenten Kiosk installieren:
 
 ```bash
-sudo apt update
-sudo apt install chromium wlr-randr
 sudo timedatectl set-timezone Europe/Zurich
+./scripts/install-raspberry-pi-kiosk.sh
 ```
 
-Danach startet das Skript die Anzeige im Chromium-Kioskmodus:
+Das Installationsskript:
 
-```bash
-./scripts/start-raspberry-pi-kiosk.sh
-```
+- installiert Chromium und die HDMI-Steuerung,
+- aktiviert den automatischen Desktop-Login,
+- kopiert den Launcher nach `~/.local/bin/home-board-kiosk`,
+- und legt einen Autostart-Eintrag unter `~/.config/autostart` an.
 
 Beim ersten Start einmal mit dem autorisierten GitHub-Konto anmelden. Das
 separate Chromium-Profil unter `~/.config/home-board-kiosk` behält die Sitzung.
 Das Skript schaltet HDMI täglich um 23:30 Uhr aus und um 05:00 Uhr wieder ein
-und startet Chromium nach einem Absturz automatisch neu.
+und startet Chromium nach einem Absturz oder einem Raspberry-Pi-Neustart
+automatisch neu.
 
-Für den automatischen Start nach der Desktop-Anmeldung das Skript in
-`~/.config/labwc/autostart` eintragen:
-
-```text
-/ABSOLUTER/PFAD/home-board/scripts/start-raspberry-pi-kiosk.sh &
-```
-
-Bei einem abweichenden Wayland-Ausgang kann er beim Start angegeben werden:
+Bei einem abweichenden Wayland-Ausgang kann er bei der Installation angegeben
+werden:
 
 ```bash
-HDMI_OUTPUT=HDMI-A-2 ./scripts/start-raspberry-pi-kiosk.sh
+HDMI_OUTPUT=HDMI-A-2 ./scripts/install-raspberry-pi-kiosk.sh
 ```
+
+Nach einem `git pull` das Installationsskript erneut ausführen, damit die lokal
+installierte Launcher-Version aktualisiert wird.
 
 ## Prüfung
 

@@ -2,6 +2,12 @@
 
 set -u
 
+readonly CONFIG_FILE="${HOME_BOARD_CONFIG_FILE:-$HOME/.config/home-board-kiosk/environment}"
+if [[ -r "$CONFIG_FILE" ]]; then
+  # The installer writes this user-owned file with shell-escaped values.
+  source "$CONFIG_FILE"
+fi
+
 readonly HOME_BOARD_URL="${HOME_BOARD_URL:-https://home.void0.ch/display}"
 readonly HDMI_OUTPUT="${HDMI_OUTPUT:-}"
 readonly PROFILE_DIR="${HOME_BOARD_PROFILE_DIR:-$HOME/.config/home-board-kiosk}"
