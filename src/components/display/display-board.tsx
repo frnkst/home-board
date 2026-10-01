@@ -613,17 +613,6 @@ export function DisplayBoard({ initialData }: { initialData: DisplayData }) {
     }
   }, [data.events, now]);
 
-  const stale =
-    now.getTime() - new Date(data.loadedAt).getTime() > 15 * 60 * 1000;
-  const mode =
-    manualIndex !== null
-      ? "LOKAL"
-      : forcedEntry
-        ? "MANUELL"
-        : data.displayState?.pausedAt
-          ? "PAUSE"
-          : "ZYKLUS";
-
   function renderOverview() {
     return (
       <main className="overview">
@@ -989,7 +978,23 @@ export function DisplayBoard({ initialData }: { initialData: DisplayData }) {
     >
       <header className="display-header">
         <time className="date-lockup">{dayFormatter.format(now)}</time>
+        <nav className="header-playlist-nav" aria-label="Playlist-Navigation">
+          <button type="button" onClick={() => navigate(-1)} aria-label="Vorherige Ansicht">
+            <span aria-hidden="true">←</span>
+          </button>
+          <span className="header-playlist-nav__position">
+            {activeEntries.length
+              ? `${String(selectedIndex + 1).padStart(2, "0")} / ${String(activeEntries.length).padStart(2, "0")}`
+              : "ÜBERSICHT"}
+          </span>
+          <button type="button" onClick={() => navigate(1)} aria-label="Nächste Ansicht">
+            <span aria-hidden="true">→</span>
+          </button>
+        </nav>
         <time className="clock">{timeFormatter.format(now)}</time>
+        <div className="header-progress" aria-hidden="true">
+          <span style={{ transform: `scaleX(${entryProgress})` }} />
+        </div>
       </header>
 
       <div className="display-stage">
@@ -1009,31 +1014,6 @@ export function DisplayBoard({ initialData }: { initialData: DisplayData }) {
         )}
       </div>
 
-      <footer className="display-footer">
-        <div className="status">
-          <span className={stale || data.error ? "status__dot status__dot--warn" : "status__dot"} />
-          {data.error ? "OFFLINE" : stale ? "DATEN VERALTET" : mode}
-          {feedErrors.length > 0 && (
-            <small>· {feedErrors.join(", ")} eingeschränkt</small>
-          )}
-        </div>
-        <div className="playlist-nav" aria-label="Playlist-Navigation">
-          <button type="button" onClick={() => navigate(-1)} aria-label="Vorherige Ansicht">
-            ←
-          </button>
-          <span>
-            {activeEntries.length
-              ? `${String(selectedIndex + 1).padStart(2, "0")} / ${String(activeEntries.length).padStart(2, "0")}`
-              : "ÜBERSICHT"}
-          </span>
-          <button type="button" onClick={() => navigate(1)} aria-label="Nächste Ansicht">
-            →
-          </button>
-        </div>
-        <div className="progress-track" aria-hidden="true">
-          <span style={{ transform: `scaleX(${entryProgress})` }} />
-        </div>
-      </footer>
     </div>
   );
 }
