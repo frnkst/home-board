@@ -84,9 +84,11 @@ function parseWeather(payload: unknown): WeatherData | null {
             date,
             temperatureMaxCelsius: maximum,
             temperatureMinCelsius: minimum,
+            precipitationMm: number(point.precipitationMm) ?? 0,
             precipitationProbabilityPercent: number(
               point.precipitationProbabilityPercent,
             ),
+            windSpeedMaxKmh: number(point.windSpeedMaxKmh) ?? 0,
             weatherCode: number(point.weatherCode ?? point.weather_code),
           }
         : null;
@@ -97,12 +99,17 @@ function parseWeather(payload: unknown): WeatherData | null {
     apparentTemperatureCelsius: number(
       current.apparentTemperatureCelsius ?? current.apparent_temperature,
     ),
+    precipitationMm: number(current.precipitationMm ?? current.precipitation),
+    windSpeedKmh: number(current.windSpeedKmh ?? current.wind_speed_10m),
+    windDirectionDegrees: number(
+      current.windDirectionDegrees ?? current.wind_direction_10m,
+    ),
     weatherCode: number(
       current.weather_code ?? current.weathercode ?? current.weatherCode,
     ),
     updatedAt:
-      typeof root.updatedAt === "string"
-        ? root.updatedAt
+      typeof (root.fetchedAt ?? root.updatedAt) === "string"
+        ? String(root.fetchedAt ?? root.updatedAt)
         : new Date().toISOString(),
     forecast,
   };
@@ -195,12 +202,65 @@ function weatherLabel(code: number | null) {
   return "Gewitter";
 }
 
-function weatherMark(code: number | null) {
-  if (code === 0) return "☀";
-  if (code !== null && code <= 3) return "◑";
-  if (code !== null && code >= 71 && code <= 77) return "✣";
-  if (code !== null && code >= 51) return "≋";
-  return "○";
+function weatherKind(code: number | null) {
+  if (code === 0) return "sun";
+  if (code !== null && code <= 3) return "cloud";
+  if (code !== null && code <= 48) return "fog";
+  if (code !== null && code <= 67) return "rain";
+  if (code !== null && code <= 77) return "snow";
+  if (code !== null && code <= 82) return "showers";
+  if (code !== null) return "storm";
+  return "cloud";
+}
+
+function WeatherIcon({
+  code,
+  compact = false,
+}: {
+  code: number | null;
+  compact?: boolean;
+}) {
+  const kind = weatherKind(code);
+  const cloud = (
+    <path
+      className="weather-icon__cloud"
+      d="M31 67h46c10.5 0 19-7.7 19-17.2 0-8.6-7-15.8-16.2-17-2.9-11.2-13.9-19.5-27-19.5-14.4 0-26 10-27.2 22.7C16.2 38.2 9 45.9 9 55c0 6.6 3.8 12.4 9.6 15.3C22.2 68.2 26.4 67 31 67Z"
+    />
+  );
+  return (
+    <span
+      className={`weather-icon${compact ? " weather-icon--compact" : ""}`}
+      data-kind={kind}
+      role="img"
+      aria-label={weatherLabel(code)}
+    >
+      <svg viewBox="0 0 104 104" aria-hidden="true">
+        <g className="weather-icon__sun">
+          <circle cx="65" cy="35" r="19" />
+          <path d="M65 7v10M65 53v10M37 35h10M83 35h10M45 15l7 7M78 48l7 7M45 55l7-7M78 22l7-7" />
+        </g>
+        {kind !== "sun" && cloud}
+        {(kind === "rain" || kind === "showers") && (
+          <g className="weather-icon__rain">
+            <path d="M31 76l-5 11M52 76l-5 11M73 76l-5 11" />
+          </g>
+        )}
+        {kind === "snow" && (
+          <g className="weather-icon__snow">
+            <path d="M28 78v13M21.5 84.5h13M23.5 80l9 9M32.5 80l-9 9M58 78v13M51.5 84.5h13M53.5 80l9 9M62.5 80l-9 9" />
+          </g>
+        )}
+        {kind === "fog" && (
+          <g className="weather-icon__fog">
+            <path d="M17 78h68M27 88h62" />
+          </g>
+        )}
+        {kind === "storm" && (
+          <path className="weather-icon__bolt" d="M56 70H42L35 91l15-12-2 18 22-27H56Z" />
+        )}
+      </svg>
+    </span>
+  );
 }
 
 function LoadingState({ label }: { label: string }) {
@@ -226,6 +286,42 @@ function EmptyState({
       <strong>{label}</strong>
       <small>{detail}</small>
     </div>
+  );
+}
+
+function WeatherNow({ weather }: { weather: WeatherData }) {
+  return (
+    <>
+      <div className="weather-reading">
+        <WeatherIcon code={weather.weatherCode} />
+        <strong>{Math.round(weather.temperature)}°</strong>
+      </div>
+      <p className="weather-caption">
+        {weatherLabel(weather.weatherCode)}
+        {weather.apparentTemperatureCelsius !== null &&
+          ` · gefühlt ${Math.round(weather.apparentTemperatureCelsius)}°`}
+      </p>
+      <div className="weather-details">
+        <span>
+          <i className="weather-details__drop" aria-hidden />
+          <small>Regen</small>
+          <strong>{weather.precipitationMm?.toFixed(1) ?? "–"} mm</strong>
+        </span>
+        <span>
+          <i
+            className="weather-details__wind"
+            style={{
+              transform: `rotate(${weather.windDirectionDegrees ?? 0}deg)`,
+            }}
+            aria-hidden
+          >
+            ↑
+          </i>
+          <small>Wind</small>
+          <strong>{Math.round(weather.windSpeedKmh ?? 0)} km/h</strong>
+        </span>
+      </div>
+    </>
   );
 }
 
@@ -473,21 +569,11 @@ export function DisplayBoard({ initialData }: { initialData: DisplayData }) {
   function renderOverview() {
     return (
       <main className="overview">
-        <section className="weather-hero">
+        <section className="weather-hero" data-weather={weatherKind(weather?.weatherCode ?? null)}>
           <div>
             <p className="eyebrow">Wetter · {data.settings?.weatherPlaceName ?? "Zürich"}</p>
             {weather ? (
-              <>
-                <div className="weather-reading">
-                  <span className="weather-mark">{weatherMark(weather.weatherCode)}</span>
-                  <strong>{Math.round(weather.temperature)}°</strong>
-                </div>
-                <p className="weather-caption">
-                  {weatherLabel(weather.weatherCode)}
-                  {weather.apparentTemperatureCelsius !== null &&
-                    ` · gefühlt ${Math.round(weather.apparentTemperatureCelsius)}°`}
-                </p>
-              </>
+              <WeatherNow weather={weather} />
             ) : feedErrors.includes("Wetter") ? (
               <EmptyState
                 label="Wetter nicht verfügbar"
@@ -533,24 +619,14 @@ export function DisplayBoard({ initialData }: { initialData: DisplayData }) {
         return renderOverview();
       case "weather":
         return (
-          <main className="full-view">
-            <section className="weather-hero">
+          <main className="full-view weather-view">
+            <section className="weather-hero" data-weather={weatherKind(weather?.weatherCode ?? null)}>
               <div>
                 <p className="eyebrow">
                   Wetter · {data.settings?.weatherPlaceName ?? "Zürich"}
                 </p>
                 {weather ? (
-                  <>
-                    <div className="weather-reading">
-                      <span className="weather-mark">{weatherMark(weather.weatherCode)}</span>
-                      <strong>{Math.round(weather.temperature)}°</strong>
-                    </div>
-                    <p className="weather-caption">
-                      {weatherLabel(weather.weatherCode)}
-                      {weather.apparentTemperatureCelsius !== null &&
-                        ` · gefühlt ${Math.round(weather.apparentTemperatureCelsius)}°`}
-                    </p>
-                  </>
+                  <WeatherNow weather={weather} />
                 ) : (
                   <LoadingState label="Wetter" />
                 )}
@@ -834,7 +910,7 @@ function Forecast({ weather }: { weather: WeatherData | null }) {
           <time>
             {shortDayFormatter.format(new Date(`${point.date}T12:00:00Z`))}
           </time>
-          <b>{weatherMark(point.weatherCode)}</b>
+          <WeatherIcon code={point.weatherCode} compact />
           <strong>
             {Math.round(point.temperatureMaxCelsius)}° /{" "}
             {Math.round(point.temperatureMinCelsius)}°

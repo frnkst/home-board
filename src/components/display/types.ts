@@ -30,13 +30,18 @@ export type WeatherPoint = {
   date: string;
   temperatureMaxCelsius: number;
   temperatureMinCelsius: number;
+  precipitationMm: number;
   precipitationProbabilityPercent: number | null;
+  windSpeedMaxKmh: number;
   weatherCode: number | null;
 };
 
 export type WeatherData = {
   temperature: number;
   apparentTemperatureCelsius: number | null;
+  precipitationMm: number | null;
+  windSpeedKmh: number | null;
+  windDirectionDegrees: number | null;
   weatherCode: number | null;
   updatedAt: string;
   forecast: WeatherPoint[];
