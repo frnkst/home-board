@@ -103,7 +103,7 @@
   padding: clamp(28px, 3.6vw, 68px);
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
+  justify-content: flex-start;
   background:
     radial-gradient(circle at 78% 18%, rgba(255, 244, 185, 0.92), transparent 29%),
     linear-gradient(145deg, rgba(255, 245, 218, 0.96), rgba(242, 219, 181, 0.82));
@@ -272,7 +272,7 @@
 .forecast-visual {
   position: relative;
   z-index: 2;
-  margin-top: clamp(18px, 2vh, 34px);
+  margin-top: clamp(10px, 1.2vh, 20px);
   padding: clamp(12px, 1.2vw, 20px);
   border: 1px solid rgba(255, 255, 255, 0.65);
   border-radius: clamp(18px, 1.6vw, 28px);
@@ -335,7 +335,7 @@
 }
 .forecast-chart {
   width: 100%;
-  height: clamp(100px, 12vh, 155px);
+  height: clamp(125px, 15vh, 185px);
   margin-top: clamp(3px, .5vh, 8px);
 }
 .forecast-placeholder { min-height: 13vh; }
