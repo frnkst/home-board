@@ -8,6 +8,7 @@ const navigation = [
   ["/admin", "Übersicht", "⌂"],
   ["/admin/events", "Termine", "◷"],
   ["/admin/countdowns", "Countdowns", "⌛"],
+  ["/admin/live-countdowns", "Live Timer", "◉"],
   ["/admin/ticker", "Ticker", "↗"],
   ["/admin/photos", "Fotos", "▧"],
   ["/admin/webpages", "Webseiten", "◎"],

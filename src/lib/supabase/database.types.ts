@@ -53,6 +53,13 @@ export type Database = {
       countdowns: Table<
         Common & { title: string; target_at: string; color: string | null }
       >;
+      live_countdowns: Table<
+        Common & {
+          title: string;
+          target_at: string;
+          completion_text: string;
+        }
+      >;
       market_symbols: Table<
         Common & { symbol: string; label: string; currency: string }
       >;
@@ -73,6 +80,7 @@ export type Database = {
             | "departures"
             | "events"
             | "countdowns"
+            | "live_countdown"
             | "markets"
             | "photos"
             | "webpage"
@@ -99,6 +107,7 @@ export type Database = {
         | "departures"
         | "events"
         | "countdowns"
+        | "live_countdown"
         | "markets"
         | "photos"
         | "webpage"

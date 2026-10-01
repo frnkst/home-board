@@ -4,6 +4,7 @@ import type {
   Countdown,
   CustomText,
   DisplayState,
+  LiveCountdown,
   MarketSymbol,
   Photo,
   PlaylistEntry,
@@ -16,6 +17,7 @@ export type DisplayData = {
   settings: AppSettings | null;
   events: CalendarEvent[];
   countdowns: Countdown[];
+  liveCountdowns: LiveCountdown[];
   marketSymbols: MarketSymbol[];
   photos: DisplayPhoto[];
   webpages: Webpage[];

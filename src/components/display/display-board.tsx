@@ -19,6 +19,7 @@ const ACTIVE_TABLES = [
   "app_settings",
   "events",
   "countdowns",
+  "live_countdowns",
   "market_symbols",
   "photos",
   "webpages",
@@ -678,6 +679,58 @@ export function DisplayBoard({ initialData }: { initialData: DisplayData }) {
               </div>
             ) : (
               <EmptyState label="Keine Countdowns" />
+            )}
+          </main>
+        );
+      }
+      case "live_countdown": {
+        const item = data.liveCountdowns
+          .filter(
+            (countdown) =>
+              !entry.referenceId || countdown.id === entry.referenceId,
+          )
+          .toSorted(
+            (left, right) =>
+              left.sortOrder - right.sortOrder ||
+              left.id.localeCompare(right.id),
+          )[0];
+        if (!item) {
+          return (
+            <main className="full-view">
+              <EmptyState label="Kein Live Countdown" />
+            </main>
+          );
+        }
+        const remaining = Math.max(
+          0,
+          new Date(item.targetAt).getTime() - now.getTime(),
+        );
+        const totalSeconds = Math.ceil(remaining / 1000);
+        const hours = Math.floor(totalSeconds / 3600);
+        const minutes = Math.floor((totalSeconds % 3600) / 60);
+        const seconds = totalSeconds % 60;
+        const complete = remaining <= 0;
+        return (
+          <main className={`live-countdown${complete ? " live-countdown--complete" : ""}`}>
+            <div className="live-countdown__orb" aria-hidden />
+            <p className="eyebrow">{complete ? "Zeit ist um" : "Live Countdown"}</p>
+            {complete ? (
+              <>
+                <h1>{item.completionText}</h1>
+                <p className="live-countdown__title">{item.title}</p>
+              </>
+            ) : (
+              <>
+                <h1>{item.title}</h1>
+                <div className="live-countdown__time" aria-label={`${hours} Stunden, ${minutes} Minuten, ${seconds} Sekunden`}>
+                  <span><strong>{String(hours).padStart(2, "0")}</strong><small>Stunden</small></span>
+                  <i>:</i>
+                  <span><strong>{String(minutes).padStart(2, "0")}</strong><small>Minuten</small></span>
+                  <i>:</i>
+                  <span><strong>{String(seconds).padStart(2, "0")}</strong><small>Sekunden</small></span>
+                </div>
+                <time>Ziel · {timeFormatter.format(new Date(item.targetAt))} Uhr</time>
+              </>
             )}
           </main>
         );

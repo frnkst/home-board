@@ -17,6 +17,7 @@ const kindLabels = {
   departures: "Abfahrten",
   events: "Termine",
   countdowns: "Countdowns",
+  live_countdown: "Live Countdown",
   markets: "Ticker",
   photos: "Fotos",
   webpage: "Webseite",
@@ -25,12 +26,13 @@ const kindLabels = {
 
 export default async function AdminOverview() {
   const supabase = await createClient();
-  const [stateResult, playlistResult, events, countdowns, markets, photos, webpages, texts] =
+  const [stateResult, playlistResult, events, countdowns, liveCountdowns, markets, photos, webpages, texts] =
     await Promise.all([
       supabase.from("display_state").select("*").eq("id", true).maybeSingle(),
       supabase.from("playlist_entries").select("*").order("sort_order").order("id"),
       supabase.from("events").select("id", { count: "exact", head: true }),
       supabase.from("countdowns").select("id", { count: "exact", head: true }),
+      supabase.from("live_countdowns").select("id", { count: "exact", head: true }),
       supabase.from("market_symbols").select("id", { count: "exact", head: true }),
       supabase.from("photos").select("id", { count: "exact", head: true }),
       supabase.from("webpages").select("id", { count: "exact", head: true }),
@@ -58,6 +60,7 @@ export default async function AdminOverview() {
   const counts = [
     ["Termine", events.count ?? 0],
     ["Countdowns", countdowns.count ?? 0],
+    ["Live Countdowns", liveCountdowns.count ?? 0],
     ["Ticker", markets.count ?? 0],
     ["Fotos", photos.count ?? 0],
     ["Webseiten", webpages.count ?? 0],
@@ -120,6 +123,7 @@ export default async function AdminOverview() {
         <div className="admin-link-grid">
           <SectionLink href="/admin/events" title="Termine" detail={`${events.count ?? 0} Einträge`} />
           <SectionLink href="/admin/countdowns" title="Countdowns" detail={`${countdowns.count ?? 0} Einträge`} />
+          <SectionLink href="/admin/live-countdowns" title="Live Countdowns" detail={`${liveCountdowns.count ?? 0} Timer`} />
           <SectionLink href="/admin/ticker" title="Ticker" detail={`${markets.count ?? 0} Symbole`} />
           <SectionLink href="/admin/photos" title="Fotos" detail={`${photos.count ?? 0} Bilder`} />
           <SectionLink href="/admin/webpages" title="Webseiten" detail={`${webpages.count ?? 0} Seiten`} />

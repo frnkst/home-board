@@ -6,7 +6,10 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 
 import { requireAdmin } from "@/lib/auth";
-import { parseZurichDateTimeLocal } from "@/lib/domain/date-time";
+import {
+  formatZurichDateTimeLocal,
+  parseZurichDateTimeLocal,
+} from "@/lib/domain/date-time";
 import { recurrenceSchema } from "@/lib/domain/schemas";
 import { searchPlaces, searchStops } from "@/lib/providers";
 import { createClient } from "@/lib/supabase/server";
@@ -137,6 +140,19 @@ const orderedInputs = {
     enabled: checkbox,
     sort_order: sortOrder,
   }),
+  live_countdowns: z.object({
+    id: id.optional(),
+    title: requiredText(120),
+    mode: z.enum(["duration", "clock"]),
+    duration_minutes: z.coerce.number().int().min(1).max(10080).optional(),
+    clock_time: z
+      .union([z.literal(""), z.string().regex(/^\d{2}:\d{2}$/)])
+      .optional()
+      .transform((value) => value || undefined),
+    completion_text: requiredText(500),
+    enabled: checkbox,
+    sort_order: sortOrder,
+  }),
   market_symbols: z.object({
     id: id.optional(),
     symbol: z.string().trim().toUpperCase().regex(/^[A-Z0-9.^=-]{1,24}$/),
@@ -177,6 +193,53 @@ export async function saveCountdown(
       : await supabase.from("countdowns").insert(input);
     assertDatabaseSuccess(result.error);
   }, "Countdown gespeichert.");
+}
+
+function nextZurichClockTarget(clockTime: string, now = new Date()) {
+  const localNow = formatZurichDateTimeLocal(now);
+  const date = localNow.slice(0, 10);
+  let target = new Date(parseZurichDateTimeLocal(`${date}T${clockTime}`));
+  if (target.getTime() <= now.getTime()) {
+    const tomorrow = new Date(now.getTime() + 26 * 3_600_000);
+    const tomorrowDate = formatZurichDateTimeLocal(tomorrow).slice(0, 10);
+    target = new Date(
+      parseZurichDateTimeLocal(`${tomorrowDate}T${clockTime}`),
+    );
+  }
+  return target.toISOString();
+}
+
+export async function saveLiveCountdown(
+  _state: ActionState,
+  formData: FormData,
+): Promise<ActionState> {
+  return run(async () => {
+    const input = orderedInputs.live_countdowns.parse(values(formData));
+    if (input.mode === "duration" && !input.duration_minutes) {
+      throw new Error("Bitte eine Dauer in Minuten eingeben.");
+    }
+    if (input.mode === "clock" && !input.clock_time) {
+      throw new Error("Bitte eine Zielzeit eingeben.");
+    }
+    const targetAt =
+      input.mode === "duration"
+        ? new Date(
+            Date.now() + (input.duration_minutes ?? 0) * 60_000,
+          ).toISOString()
+        : nextZurichClockTarget(input.clock_time!);
+    const payload = {
+      title: input.title,
+      target_at: targetAt,
+      completion_text: input.completion_text,
+      enabled: input.enabled,
+      sort_order: input.sort_order,
+    };
+    const supabase = await createClient();
+    const result = input.id
+      ? await supabase.from("live_countdowns").update(payload).eq("id", input.id)
+      : await supabase.from("live_countdowns").insert(payload);
+    assertDatabaseSuccess(result.error);
+  }, "Live Countdown gestartet.");
 }
 
 export async function saveMarketSymbol(
@@ -226,6 +289,7 @@ const deleteInput = z.object({
   resource: z.enum([
     "events",
     "countdowns",
+    "live_countdowns",
     "market_symbols",
     "webpages",
     "custom_texts",
@@ -249,6 +313,12 @@ export async function deleteResource(
       case "countdowns":
         assertDatabaseSuccess(
           (await supabase.from("countdowns").delete().eq("id", input.id)).error,
+        );
+        break;
+      case "live_countdowns":
+        assertDatabaseSuccess(
+          (await supabase.from("live_countdowns").delete().eq("id", input.id))
+            .error,
         );
         break;
       case "market_symbols":
@@ -368,6 +438,7 @@ const playlistInput = z.object({
     "departures",
     "events",
     "countdowns",
+    "live_countdown",
     "markets",
     "photos",
     "webpage",
@@ -399,6 +470,7 @@ const orderInput = z.object({
   id,
   resource: z.enum([
     "countdowns",
+    "live_countdowns",
     "market_symbols",
     "photos",
     "webpages",

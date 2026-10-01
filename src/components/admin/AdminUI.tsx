@@ -55,6 +55,7 @@ export function ItemActions({
   id: string;
   resource:
     | "countdowns"
+    | "live_countdowns"
     | "market_symbols"
     | "photos"
     | "webpages"
@@ -88,7 +89,7 @@ export function DeleteResource({
   resource,
 }: {
   id: string;
-  resource: "events" | "countdowns" | "market_symbols" | "webpages" | "custom_texts" | "playlist_entries";
+  resource: "events" | "countdowns" | "live_countdowns" | "market_symbols" | "webpages" | "custom_texts" | "playlist_entries";
 }) {
   return (
     <ActionForm action={deleteResource} submitLabel="Löschen" destructive>

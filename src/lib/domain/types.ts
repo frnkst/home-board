@@ -6,6 +6,7 @@ import type {
   customTextSchema,
   displayStateSchema,
   eventSchema,
+  liveCountdownSchema,
   marketSymbolSchema,
   photoSchema,
   playlistEntrySchema,
@@ -18,6 +19,7 @@ export type Recurrence = z.infer<typeof recurrenceSchema>;
 export type AppSettings = z.infer<typeof appSettingsSchema>;
 export type CalendarEvent = z.infer<typeof eventSchema>;
 export type Countdown = z.infer<typeof countdownSchema>;
+export type LiveCountdown = z.infer<typeof liveCountdownSchema>;
 export type MarketSymbol = z.infer<typeof marketSymbolSchema>;
 export type Photo = z.infer<typeof photoSchema>;
 export type Webpage = z.infer<typeof webpageSchema>;

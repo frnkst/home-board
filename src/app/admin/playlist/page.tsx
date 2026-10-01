@@ -5,21 +5,23 @@ import { createClient } from "@/lib/supabase/server";
 
 const kinds = [
   ["overview", "Übersicht"], ["weather", "Wetter"], ["departures", "Abfahrten"],
-  ["events", "Termine"], ["countdowns", "Countdowns"], ["markets", "Ticker"],
+  ["events", "Termine"], ["countdowns", "Countdowns"], ["live_countdown", "Live Countdown"], ["markets", "Ticker"],
   ["photos", "Fotos"], ["webpage", "Webseite"], ["custom_text", "Eigener Text"],
 ] as const;
 
 export default async function PlaylistPage() {
   const supabase = await createClient();
-  const [entriesResult, pagesResult, textsResult] = await Promise.all([
+  const [entriesResult, pagesResult, textsResult, liveCountdownsResult] = await Promise.all([
     supabase.from("playlist_entries").select("*").order("sort_order").order("id"),
     supabase.from("webpages").select("id,title").order("sort_order"),
     supabase.from("custom_texts").select("id,title").order("sort_order"),
+    supabase.from("live_countdowns").select("id,title").order("sort_order"),
   ]);
   const entries = entriesResult.data ?? [];
   const references = [
     ...(pagesResult.data ?? []).map((item) => ({ ...item, kind: "webpage" })),
     ...(textsResult.data ?? []).map((item) => ({ ...item, kind: "custom_text" })),
+    ...(liveCountdownsResult.data ?? []).map((item) => ({ ...item, kind: "live_countdown" })),
   ];
   return <>
     <PageHeader eyebrow="Ablauf" title="Playlist" description="Ansichten dürfen mehrfach vorkommen – jeweils mit eigener Anzeigedauer." />
@@ -39,14 +41,14 @@ export default async function PlaylistPage() {
 
 type Reference = { id: string; title: string | null; kind: string };
 function PlaylistForm({ entry, order, references }: {
-  entry?: { id: string; kind: "overview" | "weather" | "departures" | "events" | "countdowns" | "markets" | "photos" | "webpage" | "custom_text"; reference_id: string | null; duration_seconds: number; enabled: boolean };
+  entry?: { id: string; kind: "overview" | "weather" | "departures" | "events" | "countdowns" | "live_countdown" | "markets" | "photos" | "webpage" | "custom_text"; reference_id: string | null; duration_seconds: number; enabled: boolean };
   order: number; references: Reference[];
 }) {
   return <ActionForm action={savePlaylistEntry}>
     {entry ? <input type="hidden" name="id" value={entry.id} /> : null}<input type="hidden" name="sort_order" value={order} />
     <Fields>
       <label><span>Ansicht</span><select name="kind" defaultValue={entry?.kind ?? "events"}>{kinds.map(([value, label]) => <option value={value} key={value}>{label}</option>)}</select></label>
-      <label><span>Bestimmter Inhalt (optional)</span><select name="reference_id" defaultValue={entry?.reference_id ?? ""}><option value="">Gesamtansicht</option>{references.map((reference) => <option value={reference.id} key={reference.id}>{reference.kind === "webpage" ? "Webseite" : "Text"}: {reference.title || "Ohne Titel"}</option>)}</select></label>
+      <label><span>Bestimmter Inhalt (optional)</span><select name="reference_id" defaultValue={entry?.reference_id ?? ""}><option value="">Gesamtansicht</option>{references.map((reference) => <option value={reference.id} key={reference.id}>{reference.kind === "webpage" ? "Webseite" : reference.kind === "live_countdown" ? "Live Countdown" : "Text"}: {reference.title || "Ohne Titel"}</option>)}</select></label>
       <label><span>Dauer in Sekunden</span><input name="duration_seconds" type="number" min={5} max={3600} defaultValue={entry?.duration_seconds ?? 30} /></label>
     </Fields><Toggle defaultChecked={entry?.enabled ?? true} />
   </ActionForm>;

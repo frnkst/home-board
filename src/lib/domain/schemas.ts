@@ -65,6 +65,15 @@ export const countdownSchema = z.object({
   sortOrder: z.number().int().min(0),
 });
 
+export const liveCountdownSchema = z.object({
+  id: idSchema,
+  title: titleSchema,
+  targetAt: timestampSchema,
+  completionText: z.string().trim().min(1).max(500),
+  enabled: z.boolean(),
+  sortOrder: z.number().int().min(0),
+});
+
 export const marketSymbolSchema = z.object({
   id: idSchema,
   symbol: z.string().trim().min(1).max(24).regex(/^[A-Z0-9.^=-]+$/),
@@ -105,6 +114,7 @@ export const playlistKindSchema = z.enum([
   "departures",
   "events",
   "countdowns",
+  "live_countdown",
   "markets",
   "photos",
   "webpage",
