@@ -633,11 +633,11 @@ export function DisplayBoard({ initialData }: { initialData: DisplayData }) {
           <Forecast weather={weather} maxDays={5} />
         </section>
         <section className="overview-events">
-          <SectionHeading index="02" title="Als Nächstes" />
+          <SectionHeading title="Als Nächstes" />
           <EventList events={upcomingEvents.slice(0, 3)} />
         </section>
         <section className="overview-departures">
-          <SectionHeading index="03" title="Abfahrten" />
+          <SectionHeading title="Abfahrten" />
           <DepartureList
             departures={departures}
             error={feedErrors.includes("Abfahrten")}
@@ -1018,10 +1018,10 @@ export function DisplayBoard({ initialData }: { initialData: DisplayData }) {
   );
 }
 
-function SectionHeading({ index, title }: { index: string; title: string }) {
+function SectionHeading({ index, title }: { index?: string; title: string }) {
   return (
     <header className="section-heading">
-      <span>{index}</span>
+      {index && <span>{index}</span>}
       <h1>{title}</h1>
     </header>
   );
