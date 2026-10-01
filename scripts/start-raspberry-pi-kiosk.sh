@@ -101,7 +101,10 @@ main() {
       --noerrdialogs \
       --disable-infobars \
       --disable-session-crashed-bubble \
-      --disable-features=Translate \
+      --disable-translate \
+      --disable-features=Translate,TranslateUI \
+      --lang=de-CH \
+      --accept-lang=de-CH,de \
       --password-store=basic \
       --user-data-dir="$PROFILE_DIR" \
       "$HOME_BOARD_URL"

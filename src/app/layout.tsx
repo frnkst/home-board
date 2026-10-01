@@ -15,6 +15,9 @@ const outfit = Outfit({
 export const metadata: Metadata = {
   title: "Home Board",
   description: "Das gemeinsame Dashboard für zuhause",
+  other: {
+    google: "notranslate",
+  },
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
@@ -23,7 +26,9 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       lang="de-CH"
       className={`${manrope.variable} ${outfit.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="notranslate min-h-full flex flex-col" translate="no">
+        {children}
+      </body>
     </html>
   );
 }
