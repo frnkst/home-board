@@ -1,0 +1,15 @@
+{
+  "results": [
+    {
+      "id": 2657896,
+      "name": "Zürich",
+      "latitude": 47.36667,
+      "longitude": 8.55,
+      "elevation": 429,
+      "country_code": "CH",
+      "country": "Schweiz",
+      "admin1": "Zürich",
+      "timezone": "Europe/Zurich"
+    }
+  ]
+}

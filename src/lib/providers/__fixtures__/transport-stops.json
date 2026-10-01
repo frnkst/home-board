@@ -1,0 +1,16 @@
+{
+  "stations": [
+    {
+      "id": "8503000",
+      "name": "Zürich HB",
+      "coordinate": { "x": 47.378177, "y": 8.540192 },
+      "distance": 42
+    },
+    {
+      "id": null,
+      "name": "Ungültiger Halt",
+      "coordinate": null,
+      "distance": null
+    }
+  ]
+}

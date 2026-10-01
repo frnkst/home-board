@@ -1,0 +1,22 @@
+{
+  "station": { "id": "8503000", "name": "Zürich HB" },
+  "stationboard": [
+    {
+      "stop": {
+        "departure": "2026-10-01T09:32:00+0200",
+        "delay": 3,
+        "platform": "7",
+        "prognosis": {
+          "departure": "2026-10-01T09:35:00+0200",
+          "platform": "8"
+        }
+      },
+      "name": "IC 5",
+      "category": "IC",
+      "number": "5",
+      "to": "Genève",
+      "capacity1st": 1,
+      "capacity2nd": 2
+    }
+  ]
+}
