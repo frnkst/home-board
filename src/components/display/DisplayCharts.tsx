@@ -85,7 +85,7 @@ export function WeatherForecastChart({
     return {
       animationDuration: 900,
       animationEasing: "cubicOut",
-      grid: { top: 20, right: 12, bottom: 30, left: 8, containLabel: true },
+      grid: { top: 14, right: 10, bottom: 8, left: 10 },
       tooltip: {
         trigger: "axis",
         backgroundColor: "rgba(255, 250, 241, 0.96)",
@@ -111,12 +111,7 @@ export function WeatherForecastChart({
         data: days,
         axisLine: { show: false },
         axisTick: { show: false },
-        axisLabel: {
-          color: "#796b61",
-          fontSize: 11,
-          fontWeight: 700,
-          margin: 14,
-        },
+        axisLabel: { show: false },
       },
       yAxis: [
         {
@@ -150,8 +145,8 @@ export function WeatherForecastChart({
           ),
           barWidth: "36%",
           itemStyle: {
-            color: "rgba(77, 151, 184, 0.2)",
-            borderRadius: [8, 8, 2, 2],
+            color: "rgba(77, 151, 184, 0.16)",
+            borderRadius: [7, 7, 2, 2],
           },
           emphasis: { disabled: true },
           z: 1,
@@ -163,7 +158,7 @@ export function WeatherForecastChart({
           symbol: "circle",
           symbolSize: 9,
           data: points.map((point) => point.temperatureMaxCelsius),
-          lineStyle: { color: "#c96f4a", width: 4, cap: "round" },
+          lineStyle: { color: "#c96f4a", width: 3.5, cap: "round" },
           itemStyle: {
             color: "#fffaf1",
             borderColor: "#c96f4a",
@@ -191,7 +186,7 @@ export function WeatherForecastChart({
           symbol: "circle",
           symbolSize: 7,
           data: points.map((point) => point.temperatureMinCelsius),
-          lineStyle: { color: "#5a92a7", width: 3, cap: "round" },
+          lineStyle: { color: "#5a92a7", width: 2.5, cap: "round" },
           itemStyle: {
             color: "#fffaf1",
             borderColor: "#5a92a7",
@@ -204,26 +199,11 @@ export function WeatherForecastChart({
   }, [points]);
 
   return (
-    <div className="forecast-chart-shell">
-      <div className="forecast-chart__legend">
-        <span><i data-tone="high" />Maximum</span>
-        <span><i data-tone="low" />Minimum</span>
-        <span><i data-tone="rain" />Regenrisiko</span>
-      </div>
-      <EChart
-        className="forecast-chart"
-        label="Temperatur- und Regenprognose"
-        option={option}
-      />
-      <div className="forecast-chart__icons" aria-hidden="true">
-        {points.map((point) => (
-          <span key={point.date}>
-            {Math.round(point.temperatureMaxCelsius)}° /{" "}
-            {Math.round(point.temperatureMinCelsius)}°
-          </span>
-        ))}
-      </div>
-    </div>
+    <EChart
+      className="forecast-chart"
+      label="Temperatur- und Regenprognose"
+      option={option}
+    />
   );
 }
 

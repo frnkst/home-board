@@ -44,6 +44,10 @@ const timeFormatter = new Intl.DateTimeFormat("de-CH", {
   hour: "2-digit",
   minute: "2-digit",
 });
+const forecastDayFormatter = new Intl.DateTimeFormat("de-CH", {
+  timeZone: ZONE,
+  weekday: "short",
+});
 const dateTimeFormatter = new Intl.DateTimeFormat("de-CH", {
   timeZone: ZONE,
   weekday: "short",
@@ -974,12 +978,25 @@ function Forecast({ weather }: { weather: WeatherData | null }) {
     );
   return (
     <div className="forecast-visual">
-      <div className="forecast-icons">
+      <div className="forecast-days">
         {future.map((point) => (
-          <span key={point.date}>
+          <article key={point.date}>
+            <time>
+              {forecastDayFormatter
+                .format(new Date(`${point.date}T12:00:00Z`))
+                .replace(".", "")}
+            </time>
             <WeatherIcon code={point.weatherCode} compact />
-            <small>{weatherLabel(point.weatherCode)}</small>
-          </span>
+            <div>
+              <strong>{Math.round(point.temperatureMaxCelsius)}°</strong>
+              <span>{Math.round(point.temperatureMinCelsius)}°</span>
+            </div>
+            <small>
+              {point.precipitationProbabilityPercent === null
+                ? weatherLabel(point.weatherCode)
+                : `${Math.round(point.precipitationProbabilityPercent)} % Regen`}
+            </small>
+          </article>
         ))}
       </div>
       <WeatherForecastChart points={future} />
