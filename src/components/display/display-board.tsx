@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import type { CSSProperties } from "react";
 
 import {
   MarketPriceChart,
@@ -653,23 +654,32 @@ export function DisplayBoard({ initialData }: { initialData: DisplayData }) {
           .filter((item) => !entry.referenceId || item.id === entry.referenceId)
           .toSorted((a, b) => a.sortOrder - b.sortOrder || a.id.localeCompare(b.id));
         return (
-          <main className="full-view countdown-view">
-            <SectionHeading index="Countdown" title="Vorfreude in Zahlen" />
+          <main className="countdown-view">
             {items.length ? (
               <div className="countdown-grid">
                 {items.map((item) => {
                   const difference = new Date(item.targetAt).getTime() - now.getTime();
                   const days = Math.ceil(difference / 86_400_000);
                   return (
-                    <article className="countdown" key={item.id}>
-                      <div
-                        className="countdown__accent"
-                        style={{ background: item.color ?? undefined }}
-                      />
-                      <span>{days >= 0 ? "noch" : "seit"}</span>
-                      <strong>{Math.abs(days)}</strong>
-                      <span>{Math.abs(days) === 1 ? "Tag" : "Tage"}</span>
+                    <article
+                      className="countdown"
+                      key={item.id}
+                      style={{
+                        "--countdown-color": item.color ?? "#c96f4a",
+                      } as CSSProperties}
+                    >
+                      <div className="countdown__orb" aria-hidden />
+                      <p className="eyebrow">
+                        {days >= 0 ? "Noch bis" : "Vergangen seit"}
+                      </p>
                       <h2>{item.title}</h2>
+                      <div
+                        className="countdown__days"
+                        aria-label={`${Math.abs(days)} ${Math.abs(days) === 1 ? "Tag" : "Tage"}`}
+                      >
+                        <strong>{Math.abs(days)}</strong>
+                        <span>{Math.abs(days) === 1 ? "Tag" : "Tage"}</span>
+                      </div>
                       <time>{dateTimeFormatter.format(new Date(item.targetAt))}</time>
                     </article>
                   );
