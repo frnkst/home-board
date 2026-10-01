@@ -158,7 +158,7 @@
 .weather-now__conditions { min-width: 0; }
 .weather-reading strong {
   font: 480 clamp(110px, 12.5vw, 225px)/0.74 var(--font-display), sans-serif;
-  letter-spacing: -0.095em;
+  letter-spacing: -0.035em;
   text-shadow: 0 7px 0 rgba(255, 255, 255, 0.35);
 }
 .weather-caption {
