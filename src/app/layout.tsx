@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Lora, Manrope } from "next/font/google";
+import { Manrope, Outfit } from "next/font/google";
 import "./globals.css";
 
 const manrope = Manrope({
@@ -7,8 +7,8 @@ const manrope = Manrope({
   subsets: ["latin"],
 });
 
-const lora = Lora({
-  variable: "--font-lora",
+const outfit = Outfit({
+  variable: "--font-outfit",
   subsets: ["latin"],
 });
 
@@ -21,7 +21,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="de-CH"
-      className={`${manrope.variable} ${lora.variable} h-full antialiased`}
+      className={`${manrope.variable} ${outfit.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">{children}</body>
     </html>
