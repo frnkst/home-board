@@ -1,21 +1,12 @@
 import Link from "next/link";
 
+import {
+  DesktopNavigation,
+  MobileNavigation,
+} from "@/components/admin/AdminNavigation";
 import { requireAdmin } from "@/lib/auth";
 
 import "./admin.css";
-
-const navigation = [
-  ["/admin", "Übersicht", "⌂"],
-  ["/admin/events", "Termine", "◷"],
-  ["/admin/countdowns", "Countdowns", "⌛"],
-  ["/admin/live-countdowns", "Live Timer", "◉"],
-  ["/admin/ticker", "Ticker", "↗"],
-  ["/admin/photos", "Fotos", "▧"],
-  ["/admin/webpages", "Webseiten", "◎"],
-  ["/admin/texts", "Texte", "¶"],
-  ["/admin/playlist", "Playlist", "≡"],
-  ["/admin/settings", "Einstellungen", "⚙"],
-] as const;
 
 export default async function AdminLayout({
   children,
@@ -41,24 +32,10 @@ export default async function AdminLayout({
         </div>
       </header>
       <div className="admin-frame">
-        <nav className="admin-nav" aria-label="Administration">
-          {navigation.map(([href, label, icon]) => (
-            <Link href={href} key={href}>
-              <span aria-hidden>{icon}</span>
-              {label}
-            </Link>
-          ))}
-        </nav>
+        <DesktopNavigation />
         <main className="admin-main">{children}</main>
       </div>
-      <nav className="admin-tabbar" aria-label="Schnellnavigation">
-        {navigation.map(([href, label, icon]) => (
-          <Link href={href} key={href}>
-            <span aria-hidden>{icon}</span>
-            <small>{label}</small>
-          </Link>
-        ))}
-      </nav>
+      <MobileNavigation />
     </div>
   );
 }
