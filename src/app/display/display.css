@@ -283,7 +283,7 @@
   position: relative;
   z-index: 3;
   display: grid;
-  grid-template-columns: repeat(6, 1fr);
+  grid-template-columns: repeat(var(--forecast-days, 6), 1fr);
   gap: clamp(5px, .5vw, 9px);
 }
 .forecast-days article {

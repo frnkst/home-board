@@ -641,7 +641,7 @@ export function DisplayBoard({ initialData }: { initialData: DisplayData }) {
               <LoadingState label="Wetter" />
             )}
           </div>
-          <Forecast weather={weather} />
+          <Forecast weather={weather} maxDays={5} />
         </section>
         <section className="overview-events">
           <SectionHeading index="02" title="Als Nächstes" />
@@ -1047,7 +1047,13 @@ function SectionHeading({ index, title }: { index: string; title: string }) {
   );
 }
 
-function Forecast({ weather }: { weather: WeatherData | null }) {
+function Forecast({
+  weather,
+  maxDays = 6,
+}: {
+  weather: WeatherData | null;
+  maxDays?: number;
+}) {
   const future = useMemo(
     () =>
       weather?.forecast
@@ -1056,8 +1062,8 @@ function Forecast({ weather }: { weather: WeatherData | null }) {
             point.date >=
             new Date().toLocaleDateString("sv-SE", { timeZone: ZONE }),
         )
-        .slice(0, 6) ?? [],
-    [weather],
+        .slice(0, maxDays) ?? [],
+    [maxDays, weather],
   );
   if (!weather) return <div className="forecast-placeholder" />;
   if (!future.length)
@@ -1068,7 +1074,10 @@ function Forecast({ weather }: { weather: WeatherData | null }) {
       />
     );
   return (
-    <div className="forecast-visual">
+    <div
+      className="forecast-visual"
+      style={{ "--forecast-days": future.length } as CSSProperties}
+    >
       <div className="forecast-days">
         {future.map((point) => (
           <article key={point.date}>
