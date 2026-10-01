@@ -135,6 +135,8 @@ export const displayStateSchema = z.object({
   playlistStartedAt: timestampSchema,
   pausedAt: timestampSchema.nullable(),
   forcedEntryId: idSchema.nullable(),
+  forcedKind: playlistKindSchema.nullable(),
+  forcedReferenceId: idSchema.nullable(),
   updatedAt: timestampSchema,
 });
 

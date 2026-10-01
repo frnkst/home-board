@@ -519,27 +519,28 @@ export async function moveResource(
   }, "Reihenfolge geändert.");
 }
 
-export async function forceDisplayEntry(
+const fixedViewInput = z.object({
+  kind: playlistInput.shape.kind,
+  reference_id: z
+    .union([z.literal(""), id])
+    .transform((value) => value || null),
+});
+
+export async function forceDisplayView(
   _state: ActionState,
   formData: FormData,
 ): Promise<ActionState> {
   return run(async () => {
-    const entryId = id.parse(formData.get("id"));
+    const input = fixedViewInput.parse(values(formData));
     const supabase = await createClient();
-    const entry = await supabase
-      .from("playlist_entries")
-      .select("id")
-      .eq("id", entryId)
-      .eq("enabled", true)
-      .maybeSingle();
-    assertDatabaseSuccess(entry.error);
-    if (!entry.data) throw new Error("Diese Ansicht ist deaktiviert.");
     assertDatabaseSuccess(
       (
         await supabase
           .from("display_state")
           .update({
-            forced_entry_id: entryId,
+            forced_entry_id: null,
+            forced_kind: input.kind,
+            forced_reference_id: input.reference_id,
             paused_at: new Date().toISOString(),
           })
           .eq("id", true)
@@ -557,6 +558,8 @@ export async function resumeDisplayCycle(): Promise<ActionState> {
           .from("display_state")
           .update({
             forced_entry_id: null,
+            forced_kind: null,
+            forced_reference_id: null,
             paused_at: null,
             playlist_started_at: new Date().toISOString(),
           })

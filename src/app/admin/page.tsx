@@ -1,17 +1,17 @@
 import { ActionForm } from "@/components/admin/ActionForm";
 import {
-  EmptyState,
   PageHeader,
   SectionLink,
 } from "@/components/admin/AdminUI";
 import {
-  forceDisplayEntry,
+  forceDisplayView,
   resumeDisplayCycle,
 } from "@/lib/actions/admin";
 import { getPlaylistFrame } from "@/lib/domain/playlist";
+import type { PlaylistKind } from "@/lib/domain/types";
 import { createClient } from "@/lib/supabase/server";
 
-const kindLabels = {
+const kindLabels: Record<PlaylistKind, string> = {
   overview: "Übersicht",
   weather: "Wetter",
   departures: "Abfahrten",
@@ -32,16 +32,19 @@ export default async function AdminOverview() {
       supabase.from("playlist_entries").select("*").order("sort_order").order("id"),
       supabase.from("events").select("id", { count: "exact", head: true }),
       supabase.from("countdowns").select("id", { count: "exact", head: true }),
-      supabase.from("live_countdowns").select("id", { count: "exact", head: true }),
+      supabase.from("live_countdowns").select("id,title", { count: "exact" }).order("sort_order"),
       supabase.from("market_symbols").select("id", { count: "exact", head: true }),
       supabase.from("photos").select("id", { count: "exact", head: true }),
-      supabase.from("webpages").select("id", { count: "exact", head: true }),
-      supabase.from("custom_texts").select("id", { count: "exact", head: true }),
+      supabase.from("webpages").select("id,title", { count: "exact" }).order("sort_order"),
+      supabase.from("custom_texts").select("id,title", { count: "exact" }).order("sort_order"),
     ]);
   const state = stateResult.data;
   const playlist = playlistResult.data ?? [];
   const activePlaylist = playlist.filter((entry) => entry.enabled);
-  const forced = playlist.find((entry) => entry.id === state?.forced_entry_id);
+  const legacyForced = playlist.find((entry) => entry.id === state?.forced_entry_id);
+  const forcedKind = state?.forced_kind ?? legacyForced?.kind ?? null;
+  const forcedReferenceId =
+    state?.forced_kind ? state.forced_reference_id : legacyForced?.reference_id;
   const automaticFrame = state
     ? getPlaylistFrame(
         activePlaylist.map((entry) => ({
@@ -56,7 +59,32 @@ export default async function AdminOverview() {
         new Date(),
       )
     : null;
-  const currentEntry = forced ?? activePlaylist.find((entry) => entry.id === automaticFrame?.entry.id);
+  const currentKind =
+    forcedKind ??
+    activePlaylist.find((entry) => entry.id === automaticFrame?.entry.id)?.kind ??
+    null;
+  const fixedViews = (Object.keys(kindLabels) as PlaylistKind[]).map((kind) => ({
+    kind,
+    label: kindLabels[kind],
+    referenceId: null,
+  }));
+  const contentViews = [
+    ...(liveCountdowns.data ?? []).map((item) => ({
+      kind: "live_countdown" as const,
+      label: `Live Countdown · ${item.title}`,
+      referenceId: item.id,
+    })),
+    ...(webpages.data ?? []).map((item) => ({
+      kind: "webpage" as const,
+      label: `Webseite · ${item.title}`,
+      referenceId: item.id,
+    })),
+    ...(texts.data ?? []).map((item) => ({
+      kind: "custom_text" as const,
+      label: `Text · ${item.title || "Ohne Titel"}`,
+      referenceId: item.id,
+    })),
+  ];
   const counts = [
     ["Termine", events.count ?? 0],
     ["Countdowns", countdowns.count ?? 0],
@@ -76,18 +104,18 @@ export default async function AdminOverview() {
       />
       <section className="display-control">
         <div>
-          <span className={`status-dot ${forced ? "paused" : ""}`} />
+          <span className={`status-dot ${forcedKind ? "paused" : ""}`} />
           <p>Aktuelle Anzeige</p>
-          <h2>{currentEntry ? kindLabels[currentEntry.kind] : "Keine aktive Ansicht"}</h2>
+          <h2>{currentKind ? kindLabels[currentKind] : "Keine aktive Ansicht"}</h2>
           <small>
-            {forced
+            {forcedKind
               ? "Manuell fixiert – der Zeitplan ist pausiert."
               : automaticFrame
                 ? `Automatischer Wechsel · nächste Ansicht um ${new Intl.DateTimeFormat("de-CH", { timeStyle: "short", timeZone: "Europe/Zurich" }).format(automaticFrame.nextChangeAt)} Uhr`
                 : "Die Playlist enthält keine aktive Ansicht."}
           </small>
         </div>
-        {forced ? (
+        {forcedKind ? (
           <ActionForm action={resumeDisplayCycle} submitLabel="Wechsel fortsetzen" />
         ) : null}
       </section>
@@ -97,22 +125,24 @@ export default async function AdminOverview() {
           <h2>Direkt anzeigen</h2>
           <span>Ein Tippen pausiert den automatischen Wechsel.</span>
         </div>
-        {activePlaylist.length ? (
-          <div className="override-grid">
-            {activePlaylist.map((entry, index) => (
+        <div className="override-grid">
+            {[...fixedViews, ...contentViews].map((view) => (
               <ActionForm
-                action={forceDisplayEntry}
-                submitLabel={`${index + 1}. ${kindLabels[entry.kind]}`}
-                key={entry.id}
-                className={entry.id === forced?.id ? "is-active" : ""}
+                action={forceDisplayView}
+                submitLabel={view.label}
+                key={`${view.kind}-${view.referenceId ?? "all"}`}
+                className={
+                  view.kind === forcedKind &&
+                  view.referenceId === (forcedReferenceId ?? null)
+                    ? "is-active"
+                    : ""
+                }
               >
-                <input name="id" type="hidden" value={entry.id} />
+                <input name="kind" type="hidden" value={view.kind} />
+                <input name="reference_id" type="hidden" value={view.referenceId ?? ""} />
               </ActionForm>
             ))}
           </div>
-        ) : (
-          <EmptyState>Lege zuerst Einträge in der Playlist an.</EmptyState>
-        )}
       </section>
 
       <section className="admin-section">

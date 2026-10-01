@@ -94,6 +94,19 @@ export type Database = {
         playlist_started_at: string;
         paused_at: string | null;
         forced_entry_id: string | null;
+        forced_kind:
+          | "overview"
+          | "weather"
+          | "departures"
+          | "events"
+          | "countdowns"
+          | "live_countdown"
+          | "markets"
+          | "photos"
+          | "webpage"
+          | "custom_text"
+          | null;
+        forced_reference_id: string | null;
         created_at: string;
         updated_at: string;
       }>;

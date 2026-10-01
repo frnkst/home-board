@@ -467,15 +467,33 @@ export function DisplayBoard({ initialData }: { initialData: DisplayData }) {
           stateTime,
         )
       : null;
-  const forcedIndex = data.displayState?.forcedEntryId
+  const legacyForcedIndex = data.displayState?.forcedEntryId
     ? activeEntries.findIndex(
         (entry) => entry.id === data.displayState?.forcedEntryId,
       )
     : -1;
-  const cycleIndex = forcedIndex >= 0 ? forcedIndex : (cycleFrame?.index ?? 0);
+  const forcedEntry: PlaylistEntry | null = data.displayState?.forcedKind
+    ? {
+        id: "fixed-view",
+        kind: data.displayState.forcedKind,
+        referenceId: data.displayState.forcedReferenceId,
+        durationSeconds: 30,
+        sortOrder: 0,
+        enabled: true,
+      }
+    : legacyForcedIndex >= 0
+      ? activeEntries[legacyForcedIndex] ?? null
+      : null;
+  const cycleIndex =
+    legacyForcedIndex >= 0 ? legacyForcedIndex : (cycleFrame?.index ?? 0);
   const selectedIndex =
-    manualIndex === null ? cycleIndex : manualIndex % activeEntries.length;
-  const activeEntry = activeEntries[selectedIndex] ?? null;
+    manualIndex === null || !activeEntries.length
+      ? cycleIndex
+      : manualIndex % activeEntries.length;
+  const activeEntry =
+    manualIndex === null && forcedEntry
+      ? forcedEntry
+      : activeEntries[selectedIndex] ?? null;
   const entryProgress =
     manualStartedAt !== null && activeEntry
       ? Math.min(
@@ -483,7 +501,7 @@ export function DisplayBoard({ initialData }: { initialData: DisplayData }) {
           (now.getTime() - manualStartedAt) /
             (activeEntry.durationSeconds * 1000),
         )
-      : forcedIndex >= 0 || data.displayState?.pausedAt
+      : forcedEntry || data.displayState?.pausedAt
         ? 0
         : (cycleFrame?.progress ?? 0);
 
@@ -562,7 +580,7 @@ export function DisplayBoard({ initialData }: { initialData: DisplayData }) {
   const mode =
     manualIndex !== null
       ? "LOKAL"
-      : forcedIndex >= 0
+      : forcedEntry
         ? "MANUELL"
         : data.displayState?.pausedAt
           ? "PAUSE"

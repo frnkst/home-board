@@ -173,6 +173,8 @@ async function loadDisplayData(): Promise<DisplayData> {
             playlistStartedAt: displayState.data.playlist_started_at,
             pausedAt: displayState.data.paused_at,
             forcedEntryId: displayState.data.forced_entry_id,
+            forcedKind: displayState.data.forced_kind,
+            forcedReferenceId: displayState.data.forced_reference_id,
             updatedAt: displayState.data.updated_at,
           }
         : null,
