@@ -100,9 +100,14 @@ main() {
       --kiosk \
       --noerrdialogs \
       --disable-infobars \
+      --disable-background-networking \
+      --disable-component-update \
+      --disable-sync \
       --disable-session-crashed-bubble \
       --disable-translate \
-      --disable-features=Translate,TranslateUI \
+      --disable-vulkan \
+      --disable-webgpu \
+      --disable-features=Translate,TranslateUI,OptimizationHints,MediaRouter,PushMessaging,WebGPU,Vulkan,DefaultANGLEVulkan,VulkanFromANGLE \
       --lang=de-CH \
       --accept-lang=de-CH,de \
       --password-store=basic \
