@@ -11,7 +11,8 @@ import {
   parseZurichDateTimeLocal,
 } from "@/lib/domain/date-time";
 import { recurrenceSchema } from "@/lib/domain/schemas";
-import { searchPlaces, searchStops } from "@/lib/providers";
+import { ProviderError, searchPlaces, searchStops } from "@/lib/providers";
+import { marketDataProvider } from "@/lib/providers/markets/yahoo";
 import { createClient } from "@/lib/supabase/server";
 
 export type ActionState = {
@@ -248,6 +249,22 @@ export async function saveMarketSymbol(
 ): Promise<ActionState> {
   return run(async () => {
     const input = orderedInputs.market_symbols.parse(values(formData));
+    let quotes: Awaited<ReturnType<typeof marketDataProvider.getQuotes>>;
+    try {
+      quotes = await marketDataProvider.getQuotes([input.symbol]);
+    } catch (error) {
+      if (error instanceof ProviderError && error.code === "NOT_FOUND") {
+        throw new Error(
+          `Kein Börsenkurs für ${input.symbol} gefunden. Bitte Ticker oder ISIN prüfen.`,
+        );
+      }
+      throw error;
+    }
+    if (!quotes.some((quote) => quote.symbol === input.symbol)) {
+      throw new Error(
+        `Kein Börsenkurs für ${input.symbol} gefunden. Bitte Ticker oder ISIN prüfen.`,
+      );
+    }
     const supabase = await createClient();
     const result = input.id
       ? await supabase.from("market_symbols").update(input).eq("id", input.id)

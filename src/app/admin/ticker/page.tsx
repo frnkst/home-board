@@ -8,7 +8,7 @@ export default async function TickerPage() {
   const { data } = await supabase.from("market_symbols").select("*").order("sort_order").order("id");
   const items = data ?? [];
   return <>
-    <PageHeader eyebrow="Märkte" title="Ticker-Symbole" description="Ticker oder ISIN eingeben. Schweizer Kürzel können mit .CH erfasst werden." />
+    <PageHeader eyebrow="Märkte" title="Ticker-Symbole" description="Ticker oder ISIN eingeben. Zum Beispiel AAPL für Apple; Schweizer Kürzel können mit .CH erfasst werden." />
     <section className="admin-card admin-create"><h2>Symbol hinzufügen</h2><SymbolForm order={items.length} /></section>
     <section className="admin-list">
       {items.length ? items.map((item, index) => <details className="admin-item" key={item.id}>
