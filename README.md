@@ -34,6 +34,41 @@ Die Wandanzeige liegt unter `/display` und ist wie die Verwaltung mit dem
 einzigen Admin-Konto geschützt. Wetterort, Prognoseumfang und ÖV-Haltestelle
 werden unter `/admin/settings` gesucht, ausgewählt und gespeichert.
 
+## Raspberry Pi Kiosk
+
+Auf Raspberry Pi OS zuerst Chromium und die HDMI-Steuerung installieren und
+die lokale Zeitzone setzen:
+
+```bash
+sudo apt update
+sudo apt install chromium wlr-randr
+sudo timedatectl set-timezone Europe/Zurich
+```
+
+Danach startet das Skript die Anzeige im Chromium-Kioskmodus:
+
+```bash
+./scripts/start-raspberry-pi-kiosk.sh
+```
+
+Beim ersten Start einmal mit dem autorisierten GitHub-Konto anmelden. Das
+separate Chromium-Profil unter `~/.config/home-board-kiosk` behält die Sitzung.
+Das Skript schaltet HDMI täglich um 23:30 Uhr aus und um 05:00 Uhr wieder ein
+und startet Chromium nach einem Absturz automatisch neu.
+
+Für den automatischen Start nach der Desktop-Anmeldung das Skript in
+`~/.config/labwc/autostart` eintragen:
+
+```text
+/ABSOLUTER/PFAD/home-board/scripts/start-raspberry-pi-kiosk.sh &
+```
+
+Bei einem abweichenden Wayland-Ausgang kann er beim Start angegeben werden:
+
+```bash
+HDMI_OUTPUT=HDMI-A-2 ./scripts/start-raspberry-pi-kiosk.sh
+```
+
 ## Prüfung
 
 ```bash
