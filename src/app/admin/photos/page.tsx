@@ -1,6 +1,7 @@
 import { ActionForm } from "@/components/admin/ActionForm";
-import { EmptyState, Fields, ItemActions, PageHeader, Toggle } from "@/components/admin/AdminUI";
-import { deletePhoto, updatePhoto, uploadPhoto } from "@/lib/actions/admin";
+import { EmptyState, ItemActions, PageHeader, Toggle } from "@/components/admin/AdminUI";
+import { PhotoUploadForm } from "@/components/admin/PhotoUploadForm";
+import { deletePhoto, updatePhoto } from "@/lib/actions/admin";
 import { createClient } from "@/lib/supabase/server";
 
 export default async function PhotosPage() {
@@ -15,14 +16,8 @@ export default async function PhotosPage() {
     <PageHeader eyebrow="Galerie" title="Fotos" description="Private Bilder hochladen und ihre Reihenfolge festlegen." />
     <section className="admin-card admin-create">
       <h2>Foto hochladen</h2>
-      <p className="admin-hint">JPEG, PNG, WebP oder GIF · maximal 10 MB · privat gespeichert</p>
-      <ActionForm action={uploadPhoto} encType="multipart/form-data" submitLabel="Bild hochladen">
-        <Fields>
-          <label className="wide file-field"><span>Bild auswählen</span><input name="file" type="file" accept="image/jpeg,image/png,image/webp,image/gif" required /></label>
-          <label className="wide"><span>Bildlegende (optional)</span><input name="caption" maxLength={240} /></label>
-        </Fields>
-        <input type="hidden" name="sort_order" value={photos.length} /><Toggle />
-      </ActionForm>
+      <p className="admin-hint">JPEG, PNG, WebP oder GIF · maximal 50 MB · direkt und privat gespeichert</p>
+      <PhotoUploadForm sortOrder={photos.length} />
     </section>
     <section className="photo-grid">
       {signed.length ? signed.map((photo, index) => <article className="photo-card" key={photo.id}>

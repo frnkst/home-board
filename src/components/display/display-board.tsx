@@ -889,7 +889,18 @@ export function DisplayBoard({ initialData }: { initialData: DisplayData }) {
           <main className="photo-view">
             {/* Signed storage URLs cannot be known to Next Image at build time. */}
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={photo.signedUrl} alt={photo.caption ?? ""} />
+            <img
+              className="photo-view__backdrop"
+              src={photo.signedUrl}
+              alt=""
+              aria-hidden="true"
+            />
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              className="photo-view__image"
+              src={photo.signedUrl}
+              alt={photo.caption ?? ""}
+            />
             <div className="photo-shade" />
             <p className="photo-counter">
               {String(photoIndex + 1).padStart(2, "0")} /{" "}

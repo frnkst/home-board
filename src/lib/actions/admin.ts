@@ -1,7 +1,5 @@
 "use server";
 
-import { randomUUID } from "node:crypto";
-
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 
@@ -370,44 +368,6 @@ const photoInput = z.object({
   sort_order: sortOrder,
   enabled: checkbox,
 });
-
-export async function uploadPhoto(
-  _state: ActionState,
-  formData: FormData,
-): Promise<ActionState> {
-  return run(async () => {
-    const input = photoInput.parse(values(formData));
-    const file = formData.get("file");
-    if (!(file instanceof File) || file.size === 0) {
-      throw new Error("Bitte ein Bild auswählen.");
-    }
-    if (file.size > 10 * 1024 * 1024) {
-      throw new Error("Das Bild darf höchstens 10 MB gross sein.");
-    }
-    const allowed = ["image/jpeg", "image/png", "image/webp", "image/gif"];
-    if (!allowed.includes(file.type)) {
-      throw new Error("Erlaubt sind JPEG, PNG, WebP und GIF.");
-    }
-    const extension = file.name.split(".").pop()?.toLowerCase().replace(/[^a-z0-9]/g, "");
-    const storagePath = `${new Date().getUTCFullYear()}/${randomUUID()}${extension ? `.${extension}` : ""}`;
-    const supabase = await createClient();
-    const upload = await supabase.storage.from("photos").upload(storagePath, file, {
-      contentType: file.type,
-      upsert: false,
-    });
-    assertDatabaseSuccess(upload.error);
-    const inserted = await supabase.from("photos").insert({
-      storage_path: storagePath,
-      caption: input.caption,
-      sort_order: input.sort_order,
-      enabled: input.enabled,
-    });
-    if (inserted.error) {
-      await supabase.storage.from("photos").remove([storagePath]);
-      throw inserted.error;
-    }
-  }, "Foto hochgeladen.");
-}
 
 export async function updatePhoto(
   _state: ActionState,
