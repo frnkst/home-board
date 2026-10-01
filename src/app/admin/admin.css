@@ -273,22 +273,24 @@
   .admin-account button { padding-inline: 12px; }
   .admin-frame { display: block; }
   .admin-nav { display: none; }
-  .admin-main { width: 100%; overflow: hidden; box-sizing: border-box; padding: 36px max(16px, env(safe-area-inset-right)) calc(108px + env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left)); }
+  .admin-main { width: 100%; overflow: hidden; box-sizing: border-box; padding: 36px max(16px, env(safe-area-inset-right)) calc(174px + env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left)); }
   .admin-tabbar {
     position: fixed;
     z-index: 30;
     inset: auto 10px 10px;
-    min-height: calc(66px + env(safe-area-inset-bottom));
+    min-height: calc(126px + env(safe-area-inset-bottom));
     padding: 6px max(8px, env(safe-area-inset-right)) env(safe-area-inset-bottom) max(8px, env(safe-area-inset-left));
     display: grid;
     grid-template-columns: repeat(5, 1fr);
+    grid-auto-rows: 56px;
     border: 1px solid rgba(255,255,255,.78);
     border-radius: 23px;
     background: rgba(255, 250, 242, 0.9);
     box-shadow: 0 16px 40px rgba(74,53,38,.16);
     backdrop-filter: blur(24px);
   }
-  .admin-tabbar a { min-width: 44px; min-height: 52px; display: grid; place-items: center; align-content: center; gap: 3px; color: var(--muted); text-decoration: none; }
+  .admin-tabbar a { min-width: 44px; min-height: 52px; display: grid; place-items: center; align-content: center; gap: 3px; border-radius: 13px; color: var(--muted); text-decoration: none; }
+  .admin-tabbar a:active { background: rgba(201,101,72,.1); }
   .admin-tabbar a > span { color: var(--terracotta); font-size: 19px; line-height: 1; }
   .admin-tabbar small { max-width: 70px; overflow: hidden; font-size: 8px; font-weight: 750; text-overflow: ellipsis; }
   .admin-page-header { margin-bottom: 28px; }

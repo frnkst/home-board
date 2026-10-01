@@ -51,7 +51,7 @@ export default async function AdminLayout({
         <main className="admin-main">{children}</main>
       </div>
       <nav className="admin-tabbar" aria-label="Schnellnavigation">
-        {navigation.slice(0, 5).map(([href, label, icon]) => (
+        {navigation.map(([href, label, icon]) => (
           <Link href={href} key={href}>
             <span aria-hidden>{icon}</span>
             <small>{label}</small>

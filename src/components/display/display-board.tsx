@@ -139,6 +139,7 @@ function parseDepartures(payload: unknown): Departure[] {
       {
         id: String(item.id ?? `${line}-${departureAt}-${index}`),
         line: String(line),
+        category: typeof item.category === "string" ? item.category : null,
         destination,
         departureAt,
         delayMinutes: number(item.delayMinutes ?? item.delay),
@@ -828,11 +829,10 @@ export function DisplayBoard({ initialData }: { initialData: DisplayData }) {
       }}
     >
       <header className="display-header">
-        <div className="wordmark">
-          <span>HB</span>
-          <strong>{data.settings?.householdName ?? "Home Board"}</strong>
+        <div className="date-lockup">
+          <span>Heute</span>
+          <strong>{dayFormatter.format(now)}</strong>
         </div>
-        <div className="date-line">{dayFormatter.format(now)}</div>
         <time className="clock">{timeFormatter.format(now)}</time>
       </header>
 
@@ -991,23 +991,38 @@ function DepartureList({
     );
   return (
     <div className="departure-list">
-      {departures.slice(0, 5).map((departure) => (
-        <article key={departure.id}>
-          <strong>{departure.line}</strong>
-          <div>
-            <h2>{departure.destination}</h2>
-            <small>
-              {departure.platform ? `Gleis ${departure.platform}` : "Gleis offen"}
-            </small>
-          </div>
-          <time>
-            {timeFormatter.format(new Date(departure.departureAt))}
-            {(departure.delayMinutes ?? 0) > 0 && (
-              <em>+{departure.delayMinutes}</em>
-            )}
-          </time>
-        </article>
-      ))}
+      {departures.slice(0, 5).map((departure) => {
+        const isBus =
+          departure.category?.toLowerCase() === "bus" ||
+          departure.category?.toLowerCase() === "b" ||
+          /^0{2,}\d+$/.test(departure.line.replace(/\s/g, ""));
+        return (
+          <article key={departure.id}>
+            <strong>
+              {isBus ? (
+                <svg className="bus-icon" viewBox="0 0 32 32" aria-label="Bus">
+                  <rect x="6" y="4" width="20" height="22" rx="5" />
+                  <path d="M9 8h14v8H9zM10 20h3M19 20h3" />
+                  <circle cx="11" cy="27" r="2" />
+                  <circle cx="21" cy="27" r="2" />
+                </svg>
+              ) : (
+                departure.line
+              )}
+            </strong>
+            <div>
+              <h2>{departure.destination}</h2>
+              {departure.platform ? <small>Gleis {departure.platform}</small> : null}
+            </div>
+            <time>
+              {timeFormatter.format(new Date(departure.departureAt))}
+              {(departure.delayMinutes ?? 0) > 0 && (
+                <em>+{departure.delayMinutes}</em>
+              )}
+            </time>
+          </article>
+        );
+      })}
     </div>
   );
 }

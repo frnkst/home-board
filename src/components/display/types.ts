@@ -50,6 +50,7 @@ export type WeatherData = {
 export type Departure = {
   id: string;
   line: string;
+  category: string | null;
   destination: string;
   departureAt: string;
   delayMinutes: number | null;
